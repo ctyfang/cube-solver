@@ -1,0 +1,53 @@
+[33mcommit c91dc5a6e5150565ce928e1ea55345b7683ceb51[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:18:18 2017 -0700
+
+    Modified trial.txt
+
+[33mcommit 1d88aa0f20f6ef76515a3ec8c7d27892d70674d0[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:17:36 2017 -0700
+
+    Initial commit of everything
+
+[33mcommit c1540892c0c9ee3c24594bcdc97ded4b95ee3628[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:11:56 2017 -0700
+
+    Initial commit of solving algorithm and training images
+
+[33mcommit 214c682a49e1467d6106a95969b94df6e902c6f5[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:09:45 2017 -0700
+
+    attempt to revert test.txt to say 1 2 3 instead of 1 2 3 4
+
+[33mcommit db60a0f45dfefbbd2fa1ec4a98dd6b13c7bf53fb[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:07:37 2017 -0700
+
+    modified test.txt
+
+[33mcommit 8f2e0dfb4b6d72cca4d06927d487f503ecd877be[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:06:17 2017 -0700
+
+    revert test.txt
+
+[33mcommit 1a87b6ed94a9ef3fa3d8c0bf9664733b685d1beb[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 18:02:57 2017 -0700
+
+    test 2
+
+[33mcommit 802009bce800094489d70b4d1e7f468d7985a484[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 17:59:27 2017 -0700
+
+    testing 1 2 3
+
+[33mcommit 72b25258d48e46231a2ee7016ebf304d9ccad2a7[m
+Author: ctyfang <ctyfang@gmail.com>
+Date:   Fri May 26 17:51:26 2017 -0700
+
+    Initial commit of 1) Clasper CAD 2) Cube face segmentation code 3) Tile classification code 4) Servo documentation
