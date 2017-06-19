@@ -5,8 +5,32 @@ Created on Sat Jun 17 14:46:32 2017
 @author: Carter
 """
 import numpy as np
+import RPi.GPIO as GPIO
+import time
 
-# CUBE STATE TRACKER
+#Apin = 
+#Bpin = 
+#dc_neu =
+#dc_cw =
+#dc_ccw =
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(Acpin, GPIO.OUT)
+GPIO.setup(Awpin, GPIO.OUT)
+GPIO.setup(Bcpin, GPIO.OUT)
+GPIO.setup(Bwpin, GPIO.OUT)
+
+Aclaw = GPIO.PWM(Acpin,50)
+Awrist = GPIO.PWM(Awpin,50)
+Bclaw = GPIO.PWM(Bcpin,50)
+Bwrist = GPIO.PWM(Bwpin,50)
+
+Aclaw.start(dc_close)
+Awrist.start(dc_neu)
+Bclaw_start(dc_close)
+Bwrist.start(dc_neu)
+
+#pwm.ChangeDutyCycle(dc) to reposition
 
 # INITIALIZE VARIABLES
 Fa = np.asarray([1,0,0])
@@ -59,6 +83,276 @@ def reach(Fperp):
         
     return axes, xforms[axes]
     
+
+
+def det_turns(F1, F2, axes):
+    
+    reach = xforms[axes]
+#    print("Det turns --")
+#    print(axes)
+#    print(F1)
+#    print(F2)
+    ind1 = find_index(F1, axes)
+    ind2 = find_index(F2, axes)
+    
+    if (ind1 + 1) > 3:
+        plus_ind = 0
+    else:
+        plus_ind = ind1 + 1
+        
+    if(np.all(np.equal(reach[ind1-1,:],reach[ind2,:]))):
+        num_turns = 1
+        direc = 'cw'
+        
+    elif(np.all(np.equal(reach[plus_ind,:],reach[ind2,:]))):
+        num_turns = 1
+        direc = 'ccw'
+        
+    elif(np.all(np.equal(F1,F2))):
+        num_turns = 0
+        direc = 'cw'
+        
+    else:
+        num_turns = 2
+        direc = 'cw'
+        
+    return num_turns, direc
+
+def mparse(move):
+    cmd_parts = move.split(" ")
+    
+    axis = cmd_parts[0]
+    sign = cmd_parts[1]
+    direc = cmd_parts[2]
+    
+    if axis == 'X':
+        Fdest = np.asarray([1,0,0])
+    elif axis == 'Y':
+        Fdest = np.asarray([0,1,0])
+    else:
+        Fdest = np.asarray([0,0,1])
+    
+    if sign == '-':    
+        Fdest = -1 * Fdest
+    
+    return Fdest, direc
+
+moves_executed = 0
+
+# Track 1) Claw Orientations and 2) Claw Grip
+# 0 is X-or, 1 is Y-or
+# To avoid collisions: [A_or*B_or != 1]
+A_or = 0
+A_grip = 1
+B_or = 0
+B_grip = 1
+
+# Engage/disengage claw A
+def clawswitch(clawid, onoff):
+    global A_grip
+    global B_grip
+    global A_or
+    global B_or
+    
+    if clawid == 'A' or clawid == 'B':
+        continue
+    else:
+        return 1
+    
+    if clawid == 'A':
+        if onoff == "on":
+            Aclaw.ChangeDutyCycle(dc_closed)
+            A_grip = 1
+        else:
+            Aclaw.ChangeDutyCycle(dc_open)
+            A_grip = 0
+        
+    else:
+        if onoff == "on":
+            Bclaw.ChangeDutyCycle(dc_closed)
+            B_grip = 1
+        else:
+            Bclaw.ChangeDutyCycle(dc_open)
+            B_grip = 0
+
+# Re-orient claws
+def clawturn(clawid, direc):
+    global A_grip
+    global B_grip
+    global A_or
+    global B_or
+    
+    if clawid == 'A':
+        # Disengage claw A
+        if A_grip == 1:
+            
+            # Re-orient claw B
+            if B_or != 0:
+                Bwrist.ChangeDutyCycle(dc_cw)
+                
+            # Engage claw B - so cube position is maintained
+            clawswitch('B',"on")
+            clawswitch('A',"off")
+            
+        if direc == 'cw':
+            Awrist.ChangeDutyCycle(dc_cw)
+        else:
+            Awrist.ChangeDutyCyle(dc_ccw)
+            
+    # End state - B[0,1], A[-,0]
+        B_grip = 1
+        A_grip = 0
+        B_or = 0
+        
+        if A_or == 1:
+            A_or = 0
+            
+        else:
+            A_or = 1
+            
+    else:
+        # To turn claw B, disengage it first
+        if B_grip == 1:
+            
+            # Re-orient claw A
+            if A_or != 0:
+                Awrist.ChangeDutyCycle(dc_cw)
+                
+            # Engage claw A - so cube position is maintained
+            clawswitch('A',"on")
+            clawswitch('B',"off")
+            
+        if direc == 'cw':
+            Bwrist.ChangeDutyCycle(dc_cw)
+        else:
+            Bwrist.ChangeDutyCyle(dc_ccw)
+            
+    # End state - A[0,1], B[-,0]
+        A_grip = 1
+        B_grip = 0
+        A_or = 0
+        
+        if B_or == 1:
+            B_or = 0
+        
+        else:
+            B_or = 1
+ 
+# NOTE - clawturn and clawswitch automatically update claw states
+
+# Manipulate cube using claw A       
+def cubeturn(clawid, direc):
+    global A_grip
+    global B_grip
+    global A_or
+    global B_or
+    
+    if A_or != 0 or B_or != 0:
+            
+            # If A needs re-orient
+            if A_or != 0:
+                # Disengage A
+                clawswitch('A',"off")
+                # Engage B
+                clawswitch('B',"on")
+                # Turn A
+                clawturn('A','cw')
+                # Engage A
+                clawswitch('A',"on")
+            
+            # If B needs re-orient
+            else:
+                # Disengage B
+                clawswitch('B',"off")
+                # Engage A
+                clawswitch('A',"on")
+                # Turn B
+                clawturn('B','cw')
+                # Engage B
+                clawswitch('B',"on")
+                
+    if clawid == 'A':        
+        clawswitch('B','off')
+        # Claws are now both in X-or AND both engaged
+        if direc == 'cw':
+            Awrist.ChangeDutyCycle(dc_cw)
+        else:
+            Awrist.ChangeDutyCycle(dc_ccw)
+            
+        if A_or == 1:
+            A_or = 0
+        else:
+            A_or = 1
+            
+    else:
+        clawswitch('A','off')
+        # Claws are now both in X-or AND both engaged
+        if direc == 'cw':
+            Bwrist.ChangeDutyCycle(dc_cw)
+        else:
+            Bwrist.ChangeDutyCycle(dc_ccw)
+            
+        if B_or == 1:
+            B_or = 0
+        else:
+            B_or = 1
+    
+def faceturn(clawid, direc):
+    global A_grip
+    global B_grip
+    global A_or
+    global B_or
+    
+    if A_or != 0 or B_or != 0:
+            
+        # If A needs re-orient
+        if A_or != 0:
+            # Disengage A
+            clawswitch('A',"off")
+            # Engage B
+            clawswitch('B',"on")
+            # Turn A
+            clawturn('A','cw')
+            # Engage A
+            clawswitch('A',"on")
+            
+        # If B needs re-orient
+        else:
+            # Disengage B
+            clawswitch('B',"off")
+            # Engage A
+            clawswitch('A',"on")
+            # Turn B
+            clawturn('B','cw')
+            # Engage B
+            clawswitch('B',"on")
+                
+    if clawid == 'A':        
+        # clawswitch('B','off')
+        # Claws are now both in X-or AND both engaged
+        if direc == 'cw':
+            Awrist.ChangeDutyCycle(dc_cw)
+        else:
+            Awrist.ChangeDutyCycle(dc_ccw)
+        
+        if A_or == 1:
+            A_or = 0
+        else:
+            A_or = 1
+            
+    else:
+        # clawswitch('A','off')
+        # Claws are now both in X-or AND both engaged
+        if direc == 'cw':
+            Bwrist.ChangeDutyCycle(dc_cw)
+        else:
+            Bwrist.ChangeDutyCycle(dc_ccw)
+            
+        if B_or == 1:
+            B_or = 0
+        else:
+            B_or = 1
+        
 # Given F, Fperp, and direction, transforms F
 def motor(F, Fperp, direc):
 
@@ -123,60 +417,6 @@ def motor(F, Fperp, direc):
     
     return Fout
 
-def det_turns(F1, F2, axes):
-    
-    reach = xforms[axes]
-#    print("Det turns --")
-#    print(axes)
-#    print(F1)
-#    print(F2)
-    ind1 = find_index(F1, axes)
-    ind2 = find_index(F2, axes)
-    
-    if (ind1 + 1) > 3:
-        plus_ind = 0
-    else:
-        plus_ind = ind1 + 1
-        
-    if(np.all(np.equal(reach[ind1-1,:],reach[ind2,:]))):
-        num_turns = 1
-        direc = 'cw'
-        
-    elif(np.all(np.equal(reach[plus_ind,:],reach[ind2,:]))):
-        num_turns = 1
-        direc = 'ccw'
-        
-    elif(np.all(np.equal(F1,F2))):
-        num_turns = 0
-        direc = 'cw'
-        
-    else:
-        num_turns = 2
-        direc = 'cw'
-        
-    return num_turns, direc
-
-def mparse(move):
-    cmd_parts = move.split(" ")
-    
-    axis = cmd_parts[0]
-    sign = cmd_parts[1]
-    direc = cmd_parts[2]
-    
-    if axis == 'X':
-        Fdest = np.asarray([1,0,0])
-    elif axis == 'Y':
-        Fdest = np.asarray([0,1,0])
-    else:
-        Fdest = np.asarray([0,0,1])
-    
-    if sign == '-':    
-        Fdest = -1 * Fdest
-    
-    return Fdest, direc
-
-moves_executed = 0
-
 def execute_solve(moves):
     global moves_executed
     
@@ -223,17 +463,22 @@ def execute_solve(moves):
             
             # Execute re-orientation
             for j in range(num_turns):
+                cubeturn('A',direc)
                 Fa = motor(Fb, Fa, direc)
             
             # Execute move
+            faceturn('A',turn_direc)
         
         else:
             num_turns, direc = det_turns(Fb, Fdest, b_axes)
             
             for j in range(num_turns):
+                cubeturn('B',direc)
                 Fb = motor(Fa, Fb, direc)
             
             # Execute the move
+            faceturn('B',turn_direc)
+            
         moves_executed += 1
         
         

@@ -4,7 +4,6 @@ Created on Sun Jun 18 14:18:13 2017
 
 @author: Carter
 """
-import numpy as p
 import cuberdr as cubecam
 import cubesolver as decode
 import motormanipulator as motor
