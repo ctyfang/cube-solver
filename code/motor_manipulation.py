@@ -1,42 +1,48 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Jun 17 14:46:32 2017
-
+@description: Convert moves into executable instructions for the motors
 @author: Carter
 """
+
+# IMPORT LIBRARIES ------
 import numpy as np
-import RPi.GPIO as GPIO
+import pigpio
 import time
+import os
 
-#Apin = 
-#Bpin = 
-#dc_neu =
-#dc_cw =
-#dc_ccw =
+# Release daemon for pigpio module
+os.system("sudo pigpiod")
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(Acpin, GPIO.OUT)
-GPIO.setup(Awpin, GPIO.OUT)
-GPIO.setup(Bcpin, GPIO.OUT)
-GPIO.setup(Bwpin, GPIO.OUT)
+# PIN ASSIGNMENTS ------
+Ac = 18
+Bc = 13
+Aw = [19,26]
+Bw = [22,27]
 
-Aclaw = GPIO.PWM(Acpin,50)
-Awrist = GPIO.PWM(Awpin,50)
-Bclaw = GPIO.PWM(Bcpin,50)
-Bwrist = GPIO.PWM(Bwpin,50)
+pi = pigpio.pi()
+pi.set_mode(Ac,pigpio.OUT)
+pi.set_mode(Bc,pigpio.OUT)
 
-Aclaw.start(dc_close)
-Awrist.start(dc_neu)
-Bclaw_start(dc_close)
-Bwrist.start(dc_neu)
+for x in range(len(Aw)):
+    pi.set_mode(Aw[x],pigpio.OUT)
+    
+for x in range(len(Bw)):
+    pi.set_mode(Bw[x],pigpio.OUT)
 
-#pwm.ChangeDutyCycle(dc) to reposition
+dc_0 = 500 # open
+dc_1 = 650 # neutral
+dc_2 = 800 # closed
 
-# INITIALIZE VARIABLES
+# INITIALIZE VARIABLES ------
 Fa = np.asarray([1,0,0])
 Fb = np.asarray([0,0,-1])
 Fdest = np.asarray([0,1,0])
 
+# xy/xz/yz contain lists of face indices
+# rotation along the xy/xz/yz axes results in movement
+# through these lists
+# whether direction of rotation is cw/ccw determines upwards/downwards movement
 xforms = {
         "xy" : np.asarray(
                 [[1,0,0],
@@ -59,6 +65,7 @@ xforms = {
 # If face is pos, dir is cw
 # move up the list
 
+# FUNCTION --- Find a face's index in an axis list ---
 def find_index(face, axes):
 #    print("Searching for IND")
     print("F=" + str(face))
@@ -69,6 +76,7 @@ def find_index(face, axes):
                 
     return ind
 
+# FUNCTION --- Determine which faces can be reached by a clasper ---
 # Given Fperp, returns a list of reachable faces
 def reach(Fperp):
     a_ax = abs(Fperp).argmax()
@@ -84,17 +92,15 @@ def reach(Fperp):
     return axes, xforms[axes]
     
 
-
+# FUNCTION --- Given Fin, Fout, axis, determine number of turns and direction
 def det_turns(F1, F2, axes):
     
     reach = xforms[axes]
-#    print("Det turns --")
-#    print(axes)
-#    print(F1)
-#    print(F2)
+    # find index of F1 and F2, index in range[0,3]
     ind1 = find_index(F1, axes)
     ind2 = find_index(F2, axes)
     
+    """
     if (ind1 + 1) > 3:
         plus_ind = 0
     else:
@@ -115,7 +121,7 @@ def det_turns(F1, F2, axes):
     else:
         num_turns = 2
         direc = 'cw'
-        
+    """    
     return num_turns, direc
 
 def mparse(move):
@@ -356,25 +362,23 @@ def faceturn(clawid, direc):
 # Given F, Fperp, and direction, transforms F
 def motor(F, Fperp, direc):
 
-    # Store indices of Fa, Fb
+    # Store indices of Fa, Fb (X,Y,Z)
     a_ax = abs(F).argmax()
-    #print(a_ax)
     b_ax = abs(Fperp).argmax()
-    #print(b_ax)
     
-    # Store sign of plane
+    # Store sign of plane (+/-)
     if F.sum() > 0:
         a_sign = 'pos'
     else:
         a_sign = 'neg'
     
-    # Set the resultant PLANE of Fb
+    # initialize the resultant PLANE of Fb
     Fout = [1,1,1]
     Fout[a_ax] = 0
     Fout[b_ax] = 0
       # based on a_ax, b_ax, determine which list to use
     
-    # Det rotation axes
+    # Det rotation axis of Fb, based on Fa
     if a_ax == 0:
         axes = 'yz'
     elif a_ax == 1:
@@ -385,7 +389,7 @@ def motor(F, Fperp, direc):
     #print(axes)
     curr_ind = find_index(Fperp, axes)
     
-    # Set the resultant SIGN of Fb
+    # Set the resultant sign of Fb
     if a_sign == 'pos':
         
         # Turn is cw

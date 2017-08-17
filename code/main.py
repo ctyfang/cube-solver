@@ -4,18 +4,24 @@ Created on Sun Jun 18 14:18:13 2017
 
 @author: Carter
 """
-import cuberdr as cubecam
-import cubesolver as decode
-import motormanipulator as motor
+import cuberdr
+import cubesolver
+import motormod as motor
 
-# capture cube state
-state = cubecam.read()
-
-# check cube state for inconsistencies
-
-# plug cube state into solver function
-decode.gen_moveset(state)
-moves = decode.moves
-
-# execute solve and re-orientation scripts
-motor.execute_solve(moves)
+def start():
+    # STEP 1 - CAPTURE CUBE STATE
+    state = cuberdr.read()
+    
+    # STEP 2 - CHECK STATE FOR INCONSISTENCIES
+    if(cubesolver.checkState(state) == 0):
+        print('Invalid cube state')
+        return 1
+    else:
+        pass
+    
+    # STEP 3 - GENERATE MOVE SET BASED ON INITIAL CUBE STATE
+    cubesolver.gen_moveset(state)
+    moves = cubesolver.moves
+    
+    # STEP 4 - EXECUTE MOVE SET
+    motor.execute_solve(moves)

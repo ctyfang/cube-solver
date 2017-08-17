@@ -75,6 +75,33 @@ relations = {'R' : {'left':'G', 'right':'B', 'opposite':'O', 'above':'W', 'below
              'W' : {'left':'G', 'right':'B', 'opposite':'Y', 'above':'O', 'below':'R'},
              'Y' : {'left':'G', 'right':'B', 'opposite':'W', 'above':'R', 'below':'O'}}
 
+# Function for checking input cube state
+def checkState(inState):
+    
+    # Gate 1 - Tile counting to verify correctness of the camera
+    tileCounts = {'R':0, 'O':0,
+                  'B':0, 'G':0,
+                  'W':0, 'Y':0}
+    
+    for faceInd in range(6):
+        for row in range(3):
+            for col in range(3):
+                tileCounts[inState[faceInd, row, col]] += 1
+                          
+    for ind in tileCounts:
+        if(tileCounts[ind] != 9):
+            print("Gate 1 - Tile counts correct [Failed]")
+            return 1
+        else:
+            continue
+    
+    print("Gate 1 - Tile counts correct [Passed]")
+    
+    # Gate 2 - Permutationg Parity
+    
+    
+    
+    
 # Functions for manipulation of faces in X, Y, and Z
 def turn_x(sign, direction):
     
@@ -263,32 +290,32 @@ def turn(color, direction = 'cw'):
         
     if color == 'R':
         turn_x('+', direction)
-        move = "X + " + direction
+        move = "X+ " + direction
         moves.append(move)
         
     elif color == 'O':
         turn_x('-', direction)
-        move = "X - " + direction
+        move = "X- " + direction
         moves.append(move)
         
     elif color == 'G':
         turn_y('-', direction)
-        move = "Y - " + direction
+        move = "Y- " + direction
         moves.append(move)
         
     elif color == 'B':
         turn_y('+', direction)
-        move = "Y + " + direction
+        move = "Y+ " + direction
         moves.append(move)
         
     elif color == 'W':
         turn_z('+', direction)
-        move = "Z + " + direction
+        move = "Z+ " + direction
         moves.append(move)
         
     else:
         turn_z('-', direction)
-        move = "Z - " + direction
+        move = "Z- " + direction
         moves.append(move)
 
 # Determines whether a tile is an edge
@@ -1849,7 +1876,7 @@ def efficiency_eval(num_runs):
 ##randomize(30)               
 ##print(cube_state)
 #moves.clear()
-#gen_moveset()
+gen_moveset()
 ##print(cube_state)   
 ##print("-------------------")
 ##print("TOTAL Moves = " + str(len(moves)))

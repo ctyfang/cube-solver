@@ -13,18 +13,22 @@ Created on Sun Jun 18 14:40:47 2017
 # vertical (B) is against orange
 import numpy as np
 import picamera as picam
-import lab_faceclass as faceparse
+import editcube
+import faceclass
 import motor_manipulation as orient
+
+folder = "../raw_cube_img"
 
 def read():
     cubestate = np.full([6,3,3], 'E', dtype=str)
+    rootdir = "../raw_cube_img/"
     
     # RED
     # ---------------
     filename = "red.bmp"
-    picam.capture(filename)
-    # crop image
-    cubestate[0,:,:] = faceparse.interpret(filename)
+    picam.capture(rootdir + filename)
+    fpath = editcube.cropAndRotate(rootdir, filename)
+    cubestate[0,:,:] = editcube.interpret(fpath)
     
     # motor B cw
     orient.faceturn('B','cw')
@@ -32,9 +36,9 @@ def read():
     # GREEN
     # ----------------
     filename = "green.bmp"
-    picam.capture(filename)
-    # crop
-    cubestate[1,:,:] = faceparse.interpret(filename)
+    picam.capture(rootdir + filename)
+    fpath = editcube.cropAndRotate(rootdir, filename)
+    cubestate[0,:,:] = faceclass.interpret(fpath)
     
     # motor B cw
     orient.faceturn('B','cw')
@@ -42,9 +46,9 @@ def read():
     # ORANGE
     # ----------------
     filename = "orange.bmp"
-    picam.capture(filename)
-    # crop
-    cubestate[2,:,:] = faceparse.interpret(filename)
+    picam.capture(rootdir + filename)
+    fpath = editcube.cropAndRotate(rootdir, filename)
+    cubestate[0,:,:] = faceclass.interpret(fpath)
     
     # motor B cw
     orient.faceturn('B','cw')
@@ -52,9 +56,9 @@ def read():
     # BLUE
     # ----------------
     filename = "blue.bmp"
-    picam.capture(filename)
-    # crop
-    cubestate[3,:,:] = faceparse.interpret(filename)
+    picam.capture(rootdir + filename)
+    fpath = editcube.cropAndRotate(rootdir, filename)
+    cubestate[0,:,:] = faceclass.interpret(fpath)
     
     # motor B cw - > RED
     orient.faceturn('B','cw')
@@ -66,9 +70,9 @@ def read():
     # WHITE
     # ----------------
     filename = "white.bmp"
-    picam.capture(filename)
-    # crop
-    cubestate[4,:,:] = np.rot90(faceparse.interpret(filename))
+    picam.capture(rootdir + filename)
+    fpath = editcube.cropAndRotate(rootdir, filename)
+    cubestate[0,:,:] = faceclass.interpret(fpath)
     # face data is rotated 90deg cw
     
     # motor B cw -> RED
@@ -79,9 +83,9 @@ def read():
     # YELLOW
     # ----------------
     filename = "yellow.bmp"
-    picam.capture(filename)
-    # crop
-    cubestate[5,:,:] = np.rot90(faceparse.interpret(filename))
+    picam.capture(rootdir + filename)
+    fpath = editcube.cropAndRotate(rootdir, filename)
+    cubestate[0,:,:] = faceclass.interpret(fpath)
     # face data is rotated 90deg cw  
     
     # ----------------
