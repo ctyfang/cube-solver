@@ -3,7 +3,9 @@
 Created on Sun Jun 18 14:18:13 2017
 
 @author: Carter
+@description: Analyze the cube. Generate a solution. Execute the solve using motors.
 """
+
 import cuberdr
 import cubesolver
 import motormod as motor

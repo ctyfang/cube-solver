@@ -2,7 +2,9 @@
 """
 Created on Tue Jun 13 18:15:52 2017
 
-@author: Carter
+# Author: Carter
+# Purpose: Crop and rotate each image before color analysis
+# Output: Filepath of processed image
 """
 from PIL import Image
 

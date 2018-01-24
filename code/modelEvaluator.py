@@ -2,7 +2,8 @@
 """
 Created on Tue Jun 13 13:16:47 2017
 
-@author: Carter
+@ Author: Carter
+@ Purpose: Evaluate accuracy of the model using test sets for individual tiles and faces
 """
 
 # IMPORT LIBRARIES ------
@@ -30,42 +31,12 @@ ScMean = np.asarray([ 50.98827703,   9.52091376,  26.46850221])
 #            "../trainingimg/cropped_faces/lightingD (2).jpg",
 #            "../trainingimg/cropped_faces/lightingE (2).jpg"]
 
-#filenames= ["../trainingimg/cropped_faces/lightingA (2).jpg",
-#            "../trainingimg/cropped_faces/lightingA (2).jpg",
-#            "../trainingimg/cropped_faces/lightingA (2).jpg",
-#            "../trainingimg/cropped_faces/lightingA (2).jpg",
-#            "../trainingimg/cropped_faces/lightingA (2).jpg"]
-
-#filenames= ["../trainingimg/raw_overlit_faces/testSet/lightingG (1).jpg",
-#            "../trainingimg/raw_overlit_faces/testSet/lightingG (3).jpg",
-#            "../trainingimg/raw_overlit_faces/testSet/lightingG (4).jpg",
-#            "../trainingimg/raw_overlit_faces/testSet/lightingG (5).jpg",
-#            "../trainingimg/raw_overlit_faces/testSet/lightingG (6).jpg"]
-
-#filenames= ["../trainingimg/raw_overlit_faces/lightingD/edited/lightingD (1).jpg",
-#            "../trainingimg/raw_overlit_faces/lightingD/edited/lightingD (3).jpg",
-#            "../trainingimg/raw_overlit_faces/lightingD/edited/lightingD (4).jpg",
-#            "../trainingimg/raw_overlit_faces/lightingD/edited/lightingD (5).jpg",
-#            "../trainingimg/raw_overlit_faces/lightingD/edited/lightingD (6).jpg"]
-
 filenames =["../trainingimg/raw_overlit_faces/lightingC/edited/lightingC (1).jpg",
             "../trainingimg/raw_overlit_faces/lightingC/edited/lightingC (4).jpg",
             "../trainingimg/raw_overlit_faces/lightingC/edited/lightingC (5).jpg",
             "../trainingimg/raw_overlit_faces/lightingC/edited/lightingC (6).jpg"]
 
 #answers=['W','O','Y','Y','R','W','R','R','O']
-
-#answers = ['W','O','Y','Y','R','W','R','R','O',
-#           'B','B','B','Y','W','G','O','B','W',
-#           'R','G','O','B','G','Y','G','G','O',
-#           'R','G','R','B','G','Y','G','G','O',
-#           'R','O','W','R','O','W','Y','O','G']
-
-#answers = ['Y','W','O','O','R','R','W','Y','R',
-#           'B','W','G','R','Y','G','Y','O','B',
-#           'G','R','Y','W','B','Y','R','B','W',
-#           'O','Y','B','B','W','B','W','G','B',
-#           'R','G','O','B','G','Y','G','G','O']
 
 #answers = ['R','O','W','R','O','W','Y','O','G',
 #           'B','W','G','R','Y','G','Y','O','B',
@@ -78,6 +49,8 @@ answers = ['G','R','Y','W','B','Y','R','B','W',
            'Y','R','B','O','Y','W','B','G','G',
            'Y','R','R','O','O','O','G','W','W']
 
+# Input: Array of filenames for test set, correct solution to each example
+# Output: Accuracy as a percentage
 def evaluateFace(filenames, answers):
     clrs = ['B','R','G','O','W','Y']
     results = []
@@ -135,6 +108,8 @@ def evaluateFace(filenames, answers):
     print(wrong)
     return (correct/len(answers))
 
+# Input: Folder contained individual tile examples, and correct color for those tiles
+# Output: Accuracy of model on that color of tile
 def evaluateTiles(folder,tileClr):
     clrs = ['B','R','G','O','W','Y']
     results = []
@@ -182,11 +157,8 @@ def evaluateTiles(folder,tileClr):
     print(wrong)
     return (correct/len(results))
 
-#fpath = "../trainingimg/overlit_tiles/white"
 print(evaluateFace(filenames,answers))
-#print(evaluateTiles(fpath,'W'))
-#fpath = "../trainingimg/overlit_tiles/orange"
-#print(evaluateTiles(fpath,'O'))
+
 
 
    

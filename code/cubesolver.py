@@ -1,58 +1,16 @@
-# Import relevant libraries and functions
+# Author: Carter Fang
+# Purpose: Given 3D representation of cube state, generate move set needed to solve
+
 import numpy as np
 from random import randint
 
 # Initialize cube state as a 3D char array
 global cube_state
 global moves
-global wcross_turns
-global wcorn_turns
-global second_turns
-global ycross_turns
-global yedge_turns
-global posit_turns
-global reorient_turns
-
 moves = []
 
-# Initialize solved cube state
-#cube_state = np.array([np.full((3,3), color, dtype = 'str') for color in ['R', 'G', 'B', 'O', 'W', 'Y']])
-
-# Set cube state manually
-#cube_state = [
-#    [
-#        ['G','O','Y'],
-#        ['G','R','W'],
-#        ['B','W','G']
-#    ],
-#    [
-#        ['B','O','Y'],
-#        ['R','G','Y'],
-#        ['O','W','W']
-#    ],
-#    [
-#        ['B','B','O'],
-#        ['B','B','Y'],
-#        ['R','R','G']
-#    ],
-#    [
-#        ['G','R','W'],
-#        ['B','O','W'],
-#        ['W','G','B']
-#    ],
-#    [
-#        ['O','G','W'],
-#        ['Y','W','R'],
-#        ['O','B','R']
-#    ],
-#    [
-#        ['R','G','Y'],
-#        ['O','Y','Y'],
-#        ['Y','O','R']
-#    ]
-#]
-    
-#cube_state = np.array(cube_state)
+# Set cube state to be initially solved before randomization
+cube_state = np.array([np.full((3,3), color, dtype = 'str') for color in ['R', 'G', 'B', 'O', 'W', 'Y']])
 
 # Generate Look-Up Dictionaries for conversion of face COLOR to INDEX
 global ftoi
@@ -66,7 +24,6 @@ ftoi = {'R': 0, 'G': 1, 'B': 2, 'O': 3, 'W': 4, 'Y': 5}
 # B is in-plane with Y = 1
 # W is in-plane with Z = 1
 # Y is in-plane with Z = 0
-
 global relations
 relations = {'R' : {'left':'G', 'right':'B', 'opposite':'O', 'above':'W', 'below':'Y'},
              'O' : {'left':'B', 'right':'G', 'opposite':'R', 'above':'W', 'below':'Y'},
@@ -75,10 +32,9 @@ relations = {'R' : {'left':'G', 'right':'B', 'opposite':'O', 'above':'W', 'below
              'W' : {'left':'G', 'right':'B', 'opposite':'Y', 'above':'O', 'below':'R'},
              'Y' : {'left':'G', 'right':'B', 'opposite':'W', 'above':'R', 'below':'O'}}
 
-# Function for checking input cube state
+# Input: 3D cube state as np array
+# Purpose: Checking validity of input cube state
 def checkState(inState):
-    
-    # Gate 1 - Tile counting to verify correctness of the camera
     tileCounts = {'R':0, 'O':0,
                   'B':0, 'G':0,
                   'W':0, 'Y':0}
@@ -96,13 +52,10 @@ def checkState(inState):
             continue
     
     print("Gate 1 - Tile counts correct [Passed]")
-    
-    # Gate 2 - Permutationg Parity
-    
-    
-    
-    
-# Functions for manipulation of faces in X, Y, and Z
+
+# Input: Location of face based on prestated convention, direction of the turn
+# Purpose: Transformation of matrix due to manipulation of faces in X-axis
+# Side-Effect: Global cube state matrix modified
 def turn_x(sign, direction):
     
     # Determine which x-plane face is being manipulated
@@ -165,6 +118,9 @@ def turn_x(sign, direction):
     cube_state[ftoi[relations[side]['above']], up_row, :] = up_new
     cube_state[ftoi[relations[side]['below']], down_row, :] = down_new
 
+# Input: Location of face based on prestated convention, direction of the turn
+# Purpose: Transformation of matrix due to manipulation of faces in Y-axis
+# Side-Effect: Global cube state matrix modified
 def turn_y(sign, direction):
     
     if sign == '+':
@@ -227,6 +183,9 @@ def turn_y(sign, direction):
     cube_state[ftoi[relations[side]['above']], :, up_col] = up_new
     cube_state[ftoi[relations[side]['below']], :, down_col] = down_new
 
+# Input: Location of face based on prestated convention, direction of the turn
+# Purpose: Transformation of matrix due to manipulation of faces in Z-axis
+# Side-Effect: Global cube state matrix modified
 def turn_z(sign, direction):
     
     if sign == '+':
@@ -267,10 +226,14 @@ def turn_z(sign, direction):
     cube_state[ftoi[relations[side]['above']], index, :] = up_new
     cube_state[ftoi[relations[side]['below']], index, :] = down_new
 
+
 # Compile X/Y/Z turning functions
 clr_moves = []
-
 tot_turns = 0
+
+# Input: Color of the face to-be-turned, direction of the turn (default is cw)
+# Purpose: Transformation of matrix due to manipulation of any face
+# Side-Effect: Global cube state matrix modified
 def turn(color, direction = 'cw'):
     global tot_turns
     tot_turns = tot_turns + 1
@@ -290,37 +253,39 @@ def turn(color, direction = 'cw'):
         
     if color == 'R':
         turn_x('+', direction)
-        move = "X+ " + direction
+        move = "X + " + direction
         moves.append(move)
         
     elif color == 'O':
         turn_x('-', direction)
-        move = "X- " + direction
+        move = "X - " + direction
         moves.append(move)
         
     elif color == 'G':
         turn_y('-', direction)
-        move = "Y- " + direction
+        move = "Y - " + direction
         moves.append(move)
         
     elif color == 'B':
         turn_y('+', direction)
-        move = "Y+ " + direction
+        move = "Y + " + direction
         moves.append(move)
         
     elif color == 'W':
         turn_z('+', direction)
-        move = "Z+ " + direction
+        move = "Z + " + direction
         moves.append(move)
         
     else:
         turn_z('-', direction)
-        move = "Z- " + direction
+        move = "Z - " + direction
         moves.append(move)
 
-# Determines whether a tile is an edge
-# It should be noted that a particular cube face only has 3 types of tiles
-# [CORNERS, EDGES, CENTERS]
+# Input: Row and column of one specific tile
+# Purpose: Determines whether a tile is an edge
+#          It should be noted that a particular cube face only has 3 types of tiles
+#          [CORNERS, EDGES, CENTERS]
+# Output: If edge, location of that edge, else 0
 def is_edge(row, col):
     
     # an edge piece can be in four possible locations
@@ -340,7 +305,9 @@ def is_edge(row, col):
     else:
         return 0
 
-# Given an edge tile, determines parameters of the tile perpendicular to it
+# Input: Face color, edge location
+# Purpose: Given an edge tile, determines parameters of the tile perpendicular to it
+# Output: Face color and tile color associated to perpendicular tile
 def identify_edge(face, rel_location):
     
     if face == 'W':
@@ -377,7 +344,7 @@ def identify_edge(face, rel_location):
 
         L_index = [1, 2]
         R_index = [1, 0]
-
+        
     if rel_location == 'left':
         nonwhite_id = cube_state[ftoi[relations[face]['left']], L_index[0], L_index[1]]
         nonwhite_face = relations[face]['left']
@@ -396,7 +363,9 @@ def identify_edge(face, rel_location):
 
     return nonwhite_id, nonwhite_face
 
-# Randomize the cube state with a given number of turns
+# Input: Number of turns to use in randomization
+# Purpose: Randomize the cube state with a given number of turns
+# Side-Effects: Global cube state modified
 def randomize(num_moves):
     
     int_to_face = { 0: 'R', 1: 'G', 2: 'O', 3: 'B', 4: 'W', 5: 'Y'}
@@ -407,10 +376,15 @@ def randomize(num_moves):
         direction = int_to_dir[randint(0, 1)]
         
         turn(face, direction)
-        
-# Given random cube state, complete the white cross
+
+# Input: Uses global cube state
+# Purpose: Given random cube state, complete the white cross
+# Side-Effect: White cross is achieved using "turn" function. Moves
+#              appended to moves list
 def white_cross():
     global tot_turns
+    global cube_state
+    cube_state = np.asarray(cube_state)
     tot_turns = 0
     #iterations = 0
 #    print(cube_state)
@@ -579,14 +553,15 @@ def white_cross():
                 turn(relations[nonwhite_id]['right'], 'ccw')
                 turn(relations[nonwhite_id]['left'], 'cw')
         
-        # --- FINAL CHECK OF ITERATIONS DONE AND OUTPUT STATE ---                 
-#        print('{} iterations done..'.format(iterations))
-#        print(cube_state)
+
     print("WHITECROSS Turns = " + str(tot_turns))
 #    print(cube_state)
     global wcross_turns
     wcross_turns = tot_turns
 
+# Input: 1x2 vector index, where index[0] = row, index[1] = col
+# Purpose: Determine whether tile at index location is a corner
+# Output: If a corner, return location, else False
 def is_corner(index):
     
     if(index[0] == 0 and index[1] == 0):
@@ -603,8 +578,10 @@ def is_corner(index):
     else:
         return False
 
-# Given a face, and a location on that face, checks if it's connected tiles
-# match the connected face
+# Input: The tile's location in terms of face, location on that face
+# Purpose: Given a face, and a location on that face, checks if it's connected tiles
+#          match the connected face
+# Output: 0 if totally wrong, 1 if totally right, 2 if right, but needs re-orientation
 def check_corner(face, rel_location, solving = False):
     
     # TOP FACE
@@ -759,8 +736,8 @@ def check_corner(face, rel_location, solving = False):
         return 2
     
 
-
-# WHITE CORNERS
+# Purpose: Solve the corners on the first face
+# Side-effects: Modify global cube state using turn functions
 def white_corners():
     global tot_turns
     tot_turns = 0
@@ -930,7 +907,9 @@ def white_corners():
     print("WHITECORNERS Turns = " + str(tot_turns))
     global wcorn_turns
     wcorn_turns = tot_turns
-                             
+
+# Purpose: Check if second layer is complete or not
+# Output: True if incomplete, else false
 def second_layer_incomplete():
     
     is_incomplete = False
@@ -941,7 +920,9 @@ def second_layer_incomplete():
             break
         
     return is_incomplete
-        
+
+# Purpose: Solve the second layer of the cube
+# Side-effects: Modify global cube state using turn functions
 def second_layer():
     iterations = 0
     global tot_turns
@@ -1029,6 +1010,8 @@ def second_layer():
     print("SECONDLAY Turns = " + str(tot_turns))    
     second_turns = tot_turns
 
+# Purpose: Check if cross step is incomplete
+# Output: True if incomplete, else false
 def cross_incomplete():
     
     if cube_state[ftoi['Y'], 0, 1] != 'Y' or cube_state[ftoi['Y'], 1, 0] != 'Y' or cube_state[ftoi['Y'], 1, 2] != 'Y' or cube_state[ftoi['Y'], 2, 1] !='Y':
@@ -1037,7 +1020,8 @@ def cross_incomplete():
     else:
         return False
         
-        
+# Purpose: Determine starting position of the yellow cross: bar, hook, or dot
+# 
 def analyze_cross():
     
     # check four edges of yellow face
@@ -1069,7 +1053,8 @@ def analyze_cross():
         else:
             return 'hook', relations[nonyellow_faces[1]]['left']
             
-        
+# Purpose: Solve the yellow cross step for the global cube state.
+# Side-effects: Modify global cube state using turn functions
 def yellow_cross():
 
     iterations = 0
@@ -1145,7 +1130,6 @@ def relation_score(face):
         score += 1
         
     return score
-    
     
 def yellow_edges():
     global tot_turns
@@ -1467,10 +1451,6 @@ def position_yellow_corners():
         score_sum += score
             
 #    print('DEBUG: Score = {}'.format(score_sum))
-#    
-#    if score_sum == 0 or score_sum == 1:
-#        print(cube_state)
-#        print('ERROR')
 #    print(score_corner('Y', ['above', 'left']))
 #    print(score_corner('Y', ['above', 'right']))
 #    print(score_corner('Y', ['below', 'left']))
@@ -1523,9 +1503,7 @@ def score_corner_orientation(face, rel_location):
     
     # 1/4 SIDE FACES  
     else:
-        
         if face == 'R' or face == 'O':
-            
             if rel_location[0] == 'above' and rel_location[1] == 'left':
                 X_index = [0,2]
 
@@ -1625,9 +1603,6 @@ def score_corner_orientation(face, rel_location):
         curr_index2 = 2
         
     curr_id = cube_state[ftoi[face], curr_index1, curr_index2]
-    
-#    print('Curr = {}\n X_face = {}\n Y_face = {}'.format(face, X_face, Y_face))
-    
     X_face = cube_state[ftoi[X_face], 2, 1]
     Y_face = cube_state[ftoi[Y_face], 2, 1]
 
@@ -1816,6 +1791,7 @@ def get_tile(row, col):
     return color
     
 def cube_manual_input():
+    global cube_state
     print("CUBE INPUT BEGINNING")
     
     labels = ["R E D", "G R E E N", "B L U E", "O R A N G E", "W H I T E", "Y E L L O W"]
@@ -1847,7 +1823,7 @@ def efficiency_eval(num_runs):
     for i in range(0,num_runs):
         randomize(50)
         moves.clear()
-        solve() 
+#        solve() 
         whitecross[i] = wcross_turns
         secondlay[i] = second_turns
         yellowcross[i] = ycross_turns
@@ -1871,13 +1847,14 @@ def efficiency_eval(num_runs):
     means = np.array(means)
     print(means.sum())
     
-    
+
+# TESTING ----------
 #cube_manual_input()
-##randomize(30)               
-##print(cube_state)
-#moves.clear()
-gen_moveset()
-##print(cube_state)   
+randomize(30)               
+print(cube_state)
+moves.clear()
+gen_moveset(cube_state)
+print(cube_state)   
 ##print("-------------------")
-##print("TOTAL Moves = " + str(len(moves)))
+print("TOTAL Moves = " + str(len(moves)))
 ##efficiency_eval(1)

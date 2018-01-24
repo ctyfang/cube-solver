@@ -2,12 +2,10 @@
 """
 Created on Tue Jun 13 18:15:52 2017
 
-@author: Carter
+# Author: Carter
+# Purpose:
 """
-
-import image_slicer
-from PIL import Image
-import os
+=
 
 def cropAndRotate(root, filename):    
     im = Image.open(root + "/" + filename)

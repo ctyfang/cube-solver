@@ -3,14 +3,10 @@
 Created on Tue Jun 13 18:21:29 2017
 
 @author: Carter
+@ Purpose: Generate training set for color classification
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 13 13:16:47 2017
 
-@author: Carter
-"""
 import matplotlib
 from skimage import io, color
 from PIL import Image
@@ -21,29 +17,6 @@ from matplotlib import pyplot as plt
 filepath ="../trainingimg/overlit_tiles/"
 title = "ex" 
 extens = ".png"
-
-"""
-lum = { 'green' :[],
-        'blue' :[],
-        'red' :[],
-        'yellow' :[],
-        'orange' :[],
-        'white' :[]}
-
-alev = { 'green' :[],
-        'blue' :[],
-        'red' :[],
-        'yellow' :[],
-        'orange' :[],
-        'white' :[]}
-
-blev = { 'green' :[],
-        'blue' :[],
-        'red' :[],
-        'yellow' :[],
-        'orange' :[],
-        'white' :[]}
-"""
 
 #lum =  np.zeros([9,1])
 #alev = np.zeros([9,3])
@@ -117,21 +90,7 @@ for face in colors:
                     else:
                         whtPix = np.append(whtPix, currRow, axis=0)
                     
-                    
-                    """
-                    lum_sum += img_lab[pix_row, pix_col, 0]
-                    a_sum += img_lab[pix_row, pix_col, 1]
-                    b_sum += img_lab[pix_row, pix_col, 2]
-                    count += 1
-                    """
-        """       
-        lum_avg = lum_sum/count
-        a_avg = a_sum/count
-        b_avg = b_sum/count
-        lum[face].append(lum_avg)
-        alev[face].append(a_avg)
-        blev[face].append(b_avg)
-        """
+
 bluPix = np.delete(bluPix,(0),axis=0)
 redPix = np.delete(redPix,(0),axis=0)
 grnPix = np.delete(grnPix,(0),axis=0)
